@@ -28,9 +28,9 @@ import org.apache.hadoop.hbase.client.Table;
 public class TableService {
 	
 	private static final ExecutorService taskExec = Executors.newCachedThreadPool();
-	
+	private static final long DEFAULT_LATENCY = 100;
 	private Map<String,Table> clusters = new HashMap<String,Table>();
-	private Map<String,ClusterSLA> clusterSLAs = new HashMap<String,ClusterSLA>();
+	private Map<String,ClusterLatency> clusterLatencies = new HashMap<String,ClusterLatency>();
 	
 	public TableService(String table) {
 
@@ -56,9 +56,9 @@ public class TableService {
 			GetFromTable gft = new GetFromTable(get,clusters.get(cluster));
 		
 			start_time = System.nanoTime();
-	        result = getFromTable(gft, clusterSLAs.get(cluster).getLatency());
+	        result = getFromTable(gft, clusterLatencies.get(cluster).getLatency());
 	        if (result != null) {
-	        	clusterSLAs.get(cluster).addLatency((System.nanoTime() - start_time)/1e6);
+	        	clusterLatencies.get(cluster).addGetLatency((System.nanoTime() - start_time)/1e6);
 	        	return result; 
 	        }
 		}
@@ -75,9 +75,10 @@ public class TableService {
 			//System.out.println("Working on cluster: " + cluster);
 			ScanTable st = new ScanTable(s,clusters.get(cluster));
 			
-	        result = scanTable(st, clusterSLAs.get(cluster).getLatency());
+			start_time = System.nanoTime();
+	        result = scanTable(st, clusterLatencies.get(cluster).scanLatency());
 	        if (result != null) {
-	        	System.out.println("Processing Time: " + (System.nanoTime() - start_time)/1e6);
+	        	clusterLatencies.get(cluster).addScanLatency((System.nanoTime() - start_time)/1e6);
 	        	return result; 
 	        }
 		}
@@ -137,17 +138,17 @@ public class TableService {
 		
 		try {
 	 		// Open the input file and read it line by line
-			BufferedReader br = new BufferedReader(new FileReader("./clusters.conf"));
+			BufferedReader br = new BufferedReader(new FileReader("/opt/mapr/mapr-clusters.conf"));
 			String currentLine;
 			String[] tokens; // an array to hold values from one line of the file
 	
 			while ((currentLine = br.readLine()) != null) {
 				System.out.println(currentLine);
-				tokens = currentLine.split("\\s*:\\s*"); // Split on : boundaries, stripping white space.
+				tokens = currentLine.split("\\s* \\s*"); // Split on : boundaries, stripping white space.
 				try {
-					if ( (tokens != null) && (tokens.length == 3) )  {
-						clusters.put(tokens[0], conn.getTable(TableName.valueOf(tokens[1] + table)));
-						clusterSLAs.put(tokens[0], new ClusterSLA(tokens[0],Long.parseLong(tokens[2])));
+					if ( tokens != null )  {
+						clusters.put(tokens[0], conn.getTable(TableName.valueOf("/mapr/" + tokens[0] + table)));
+						clusterLatencies.put(tokens[0], new ClusterLatency(tokens[0],DEFAULT_LATENCY));
 					} else {
 						System.out.println("Ignoring malformed line: " + currentLine);
 					}
