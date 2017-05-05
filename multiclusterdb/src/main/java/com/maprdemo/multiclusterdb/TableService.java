@@ -20,6 +20,7 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
@@ -45,6 +46,23 @@ public class TableService {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 		}
+	}
+	
+	/*
+	 * Cannot have a timeout on a Put
+	 */
+	public void put(Put put) {
+		long start_time = System.nanoTime();
+		
+		try {		
+			String cluster = clusters.keySet().iterator().next();
+			clusters.get(cluster).put(put);
+			clusterLatencies.get(cluster).addPutLatency((System.nanoTime() - start_time)/1e6);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 	
 	public Result getFromTable(Get get) {

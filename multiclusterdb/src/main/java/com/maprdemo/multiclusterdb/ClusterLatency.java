@@ -8,6 +8,7 @@ public class ClusterLatency {
 	String cluster;
 	long defaultSLA;
 	ArrayDigest getDigest = TDigest.createArrayDigest(100);
+	ArrayDigest putDigest = TDigest.createArrayDigest(100);
 	ArrayDigest scanDigest = TDigest.createArrayDigest(100);
 	
 	public ClusterLatency(String cluster, long startSLA) {
@@ -48,6 +49,11 @@ public class ClusterLatency {
 	public void addGetLatency(double latency) {
 		System.out.println("Adding get latency of: " + latency + " for cluster " + cluster);
 		getDigest.add(latency);
+	}
+	
+	public void addPutLatency(double latency) {
+		System.out.println("Adding put latency of: " + latency + " for cluster " + cluster);
+		putDigest.add(latency);
 	}
 	
 	public void addScanLatency(double latency) {
