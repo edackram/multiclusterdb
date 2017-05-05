@@ -138,7 +138,7 @@ public class TableService {
 		
 		try {
 	 		// Open the input file and read it line by line
-			BufferedReader br = new BufferedReader(new FileReader("/opt/mapr/mapr-clusters.conf"));
+			BufferedReader br = new BufferedReader(new FileReader("/opt/mapr/conf/mapr-clusters.conf"));
 			String currentLine;
 			String[] tokens; // an array to hold values from one line of the file
 	
