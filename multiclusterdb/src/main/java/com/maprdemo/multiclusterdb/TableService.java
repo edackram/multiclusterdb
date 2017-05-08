@@ -9,7 +9,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -28,6 +27,9 @@ import org.apache.hadoop.hbase.client.Table;
 
 public class TableService {
 	
+	private static final String GET = "GET";
+	private static final String PUT = "PUT";
+	private static final String SCAN = "SCAN";
 	private static final ExecutorService taskExec = Executors.newCachedThreadPool();
 	private static final long DEFAULT_LATENCY = 100;
 	private Map<String,Table> clusters = new HashMap<String,Table>();
@@ -57,7 +59,7 @@ public class TableService {
 		try {		
 			String cluster = clusters.keySet().iterator().next();
 			clusters.get(cluster).put(put);
-			clusterLatencies.get(cluster).addPutLatency((System.nanoTime() - start_time)/1e6);
+			clusterLatencies.get(cluster).addLatency(PUT,(System.nanoTime() - start_time)/1e6);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -74,9 +76,9 @@ public class TableService {
 			GetFromTable gft = new GetFromTable(get,clusters.get(cluster));
 		
 			start_time = System.nanoTime();
-	        result = getFromTable(gft, clusterLatencies.get(cluster).getLatency());
+	        result = getFromTable(gft, clusterLatencies.get(cluster).getLatency(GET));
 	        if (result != null) {
-	        	clusterLatencies.get(cluster).addGetLatency((System.nanoTime() - start_time)/1e6);
+	        	clusterLatencies.get(cluster).addLatency(GET,(System.nanoTime() - start_time)/1e6);
 	        	return result; 
 	        }
 		}
@@ -94,9 +96,9 @@ public class TableService {
 			ScanTable st = new ScanTable(s,clusters.get(cluster));
 			
 			start_time = System.nanoTime();
-	        result = scanTable(st, clusterLatencies.get(cluster).scanLatency());
+	        result = scanTable(st, clusterLatencies.get(cluster).getLatency(SCAN));
 	        if (result != null) {
-	        	clusterLatencies.get(cluster).addScanLatency((System.nanoTime() - start_time)/1e6);
+	        	clusterLatencies.get(cluster).addLatency(SCAN,(System.nanoTime() - start_time)/1e6);
 	        	return result; 
 	        }
 		}
