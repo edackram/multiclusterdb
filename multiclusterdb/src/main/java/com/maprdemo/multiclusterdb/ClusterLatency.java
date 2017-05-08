@@ -19,7 +19,7 @@ public class ClusterLatency {
 	
 	public long getLatency(String type) {
 		//Get 50% percentile if at least 10 entries
-		if (digests.get(type).size() > 10) {
+		if (!digests.isEmpty() && digests.get(type).size() > 10) {
 			double latency = digests.get(type).quantile(0.5d);
 			//Latency has to be at least 1 millisecond
 			if (latency < 1)
