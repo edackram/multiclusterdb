@@ -4,7 +4,7 @@
 
     <groupId>MapR-M7</groupId>
     <artifactId>multiclusterdb</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
     <packaging>jar</packaging>
 
     <name>multiclusterdb</name>
@@ -23,9 +23,19 @@
             <version>${mapr.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.mapr.db</groupId>
+            <artifactId>maprdb</artifactId>
+            <version>5.2.0-mapr</version>
+        </dependency>
+        <dependency>
           <groupId>com.tdunning</groupId>
           <artifactId>t-digest</artifactId>
           <version>3.1</version>
+        </dependency>
+        <dependency>
+          <groupId>org.ojai</groupId>
+          <artifactId>ojai</artifactId>
+          <version>1.0</version>
         </dependency>
     </dependencies>
 		
