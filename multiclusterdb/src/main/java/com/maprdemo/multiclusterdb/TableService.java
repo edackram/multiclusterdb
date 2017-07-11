@@ -115,7 +115,7 @@ public class TableService {
             return result;
         } catch (TimeoutException e) {
             // task will be cancelled below
-        	System.out.println("Time out on Table: " + gft.getTable());
+        	System.out.println("Time out on Table: " + gft.getTable() + " timeout was: " + timeout);
         	e.printStackTrace();
         } catch (ExecutionException e) {
             // exception thrown in task; 
@@ -186,5 +186,14 @@ public class TableService {
 			System.out.println("No cluster configuration file found.");
 		} 
 
+	}
+	
+	public void printQuantiles() {
+		for (String cluster : clusterLatencies.keySet()) {
+			ClusterLatency cl = clusterLatencies.get(cluster);
+			System.out.println("Quantiles for cluster/table " + cluster + ";");
+			cl.printQuantiles();
+		}
+		
 	}
 }
