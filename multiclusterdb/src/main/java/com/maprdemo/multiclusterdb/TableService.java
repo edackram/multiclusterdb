@@ -25,6 +25,11 @@ import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 
+/**
+ * 
+ * @author mcade
+ *
+ */
 public class TableService {
 	
 	private static final String GET = "GET";
@@ -35,6 +40,12 @@ public class TableService {
 	private Map<String,Table> clusters = new HashMap<String,Table>();
 	private Map<String,ClusterLatency> clusterLatencies = new HashMap<String,ClusterLatency>();
 	
+	/**
+	 * Constructor for the TableService
+	 * 
+	 * @param table name of the table to be queried
+	 * 
+	 */
 	public TableService(String table) {
 
 		try {
@@ -50,8 +61,12 @@ public class TableService {
 		}
 	}
 	
-	/*
-	 * Cannot have a timeout on a Put
+	/**
+	 * Executes the org.apache.hadoop.hbase.client.Put on the table
+	 * in the first cluster available.
+	 * 
+	 * @param put org.apache.hadoop.hbase.client.Put created in application code.
+	 * 
 	 */
 	public void put(Put put) {
 		long start_time = System.nanoTime();
@@ -67,6 +82,16 @@ public class TableService {
 		
 	}
 	
+	/**
+	 * Takes org.apache.hadoop.hbase.client.Get and builds a
+	 * Callable for execution against the cluster with a timeout that
+	 * is retrieved from ClusterLatency.  If the Get times out, we move
+	 * to the next cluster.
+	 * 
+	 * @param get org.apache.hadoop.hbase.client.Get create in application code
+	 * @return org.apache.hadoop.hbase.client.Result
+	 * 
+	 */
 	public Result getFromTable(Get get) {
 		long start_time = 0;
 		
@@ -86,6 +111,16 @@ public class TableService {
 		return null;
 	}
 
+	/**
+	 * Takes org.apache.hadoop.hbase.client.Scan and builds a
+	 * Callable for execution against the cluster with a timeout that
+	 * is retrieved from ClusterLatency.  If the Scan times out, we move
+	 * to the next cluster.
+	 * 
+	 * @param scan org.apache.hadoop.hbase.client.Scan created in application code
+	 * @return org.apache.hadoop.hbase.client.ResultScanner
+	 * 
+	 */
 	public ResultScanner scanTable(Scan s) {
 		long start_time = System.nanoTime();
 		
@@ -106,6 +141,12 @@ public class TableService {
 		return null;
 	}
 	
+	/**
+	 * 
+	 * @param gft
+	 * @param timeout
+	 * @return
+	 */
 	private Result getFromTable(GetFromTable gft, long timeout) {
     		
         Future<Result> task = taskExec.submit(gft);
@@ -130,6 +171,12 @@ public class TableService {
         return null;
 	}
 	
+	/**
+	 * 
+	 * @param st
+	 * @param timeout
+	 * @return
+	 */
 	private ResultScanner scanTable(ScanTable st, long timeout) {
 		
         Future<ResultScanner> task = taskExec.submit(st);
@@ -154,6 +201,15 @@ public class TableService {
         return null;
 	}
 	
+	/**
+	 * Creates a Map of the clusters in mapr-clusters.conf with the tablename
+	 * to be used for processing queries against different clusters for timeout 
+	 * and fail over scenarios.
+	 * 
+	 * @param conn org.apache.hadoop.hbase.client.Connection
+	 * @param table name of the table to be queried
+	 * 
+	 */
 	private void loadClusterConfig(Connection conn,String table) {
 		
 		try {
@@ -188,6 +244,9 @@ public class TableService {
 
 	}
 	
+	/**
+	 * Print the quantiles of latency for the table across the different clusters
+	 */
 	public void printQuantiles() {
 		for (String cluster : clusterLatencies.keySet()) {
 			ClusterLatency cl = clusterLatencies.get(cluster);
